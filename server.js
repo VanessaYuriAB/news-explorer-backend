@@ -220,7 +220,14 @@ mongoose
 // Conexão com servidor
 // ----------------------
 
-// Configura porta a ser ouvida
-app.listen(process.env.PORT, () => {
-  console.log(`Aplicativo escutando na porta: ${process.env.PORT}`);
-});
+// Sobe o servidor da aplicação
+// Configura porta a ser ouvida, apenas se não estiver executando no modo de teste
+// Para Supertest
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(process.env.PORT, () => {
+    console.log(`Aplicativo escutando na porta: ${process.env.PORT}`);
+  });
+}
+
+// Exporta app, para uso no Supertest
+module.exports = app;
