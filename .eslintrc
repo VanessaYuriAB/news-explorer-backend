@@ -2,6 +2,7 @@
   // Use Airbnb style guide as base for Node.js environment
   // Configure Prettier along with ESLint to avoid rule conflicts
   "extends": ["airbnb-base", "plugin:prettier/recommended"],
+
   // Override specific rules to fit project needs
   "rules": {
     // Disable no-console rule to allow console statements, useful for debugging
@@ -12,5 +13,47 @@
     "linebreak-style": ["error", "unix"],
     // Specifies exceptions, in this case, ignore the next variable
     "no-unused-vars": ["error", { "argsIgnorePattern": "next" }]
-  }
+  },
+
+  // Aplica apenas em arquivos de teste (evita “vazar” globals pro resto do código)
+  // Padrão overrides: recomendado para não habilitar Jest no projeto todo
+  "env": { "node": true },
+  "overrides": [
+    {
+      "files": ["**/*.test.js"],
+      "env": { "jest/globals": true },
+      "plugins": ["jest"],
+      "extends": ["plugin:jest/recommended"]
+    }
+  ]
 }
+
+/*
+
+.eslintrc X .eslintrc.json X .eslintrc.js:
+
+Depende do formato do arquivo: no caso específico, não precisa de module.exports se o
+arquivo não tiver .js no nome.
+
+
+1️⃣ O arquivo atual está em formato JSON.
+
+Isso é JSON puro, então:
+✅ NÃO usa module.exports
+✅ O nome correto é .eslintrc ou .eslintrc.json
+
+Ambos funcionam exatamente igual.
+
+Quando PRECISA usar module.exports?
+Somente quando o arquivo for JavaScript:
+✅ .eslintrc.js
+
+Use .js apenas para:
+- Comentários mais flexíveis
+- require(...)
+- Condições (if, process.env)
+- Compartilhar config entre arquivos
+
+*/
+
+
