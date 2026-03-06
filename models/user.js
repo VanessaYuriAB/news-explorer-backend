@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 8,
     match: /^[^<>]+$/, // regex para segurança básica, '<' e '>' não são permitidos
-    select: false, // o banco de dados não devolve esse campo (hash de senha) por padrão
+    select: false, // o banco de dados não devolve esse campo (hash de senha) por padrão > apenas em queries, qdo feito find, findOne, findById, não inclui o campo por padrão > create, save, new Model() não passam por projeção e, após o método, o campo é retornado na requisição feita
   },
   name: {
     type: String,
@@ -28,6 +28,23 @@ const userSchema = new mongoose.Schema({
     minlength: 2,
     maxlength: 30,
     match: /^[^<>]+$/, // regex para segurança básica, '<' e '>' não são permitidos
+  },
+});
+
+// Transforma schema, removendo os campos 'password' e '__v'
+// 'password' é retornado em /signup pq passar por .create() para hashear a senha
+// '__v' é criado pelo próprio Mongo DB e não é usado no projeto
+userSchema.set('toJSON', {
+  transform: (doc, ret) => {
+    // Aqui, é para alterar o objeto mesmo, por isso as regras do eslint
+    // foram desativadas abaixo
+
+    // eslint-disable-next-line no-param-reassign
+    delete ret.password;
+
+    // eslint-disable-next-line no-param-reassign, no-underscore-dangle
+    delete ret.__v;
+    return ret;
   },
 });
 
