@@ -213,7 +213,16 @@ mongoose
   })
   .catch((err) => {
     console.log(`Erro ao conectar com Mongo DB: ${err}`);
-    process.exit(1); // para evitar app rodando sem DB
+
+    // Em teste, erros devem falhar testes, não matar processos
+    // Jest captura o erro, o teste falha corretamente e o stacktrace permanece completo pq o
+    // erro é lançado antes do '.exit'
+    if (process.env.NODE_ENV === 'test') {
+      throw err;
+    }
+
+    // Para evitar app rodando sem DB
+    process.exit(1);
   });
 
 // ----------------------
