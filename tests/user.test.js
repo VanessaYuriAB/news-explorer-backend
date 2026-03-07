@@ -8,6 +8,7 @@ const app = require('../server');
 const request = supertest(app);
 
 const User = require('../models/user');
+const errorMsg = require('../utils/errorsMsgs');
 
 describe('Suíte de testes (DB + HTTP)', () => {
   // Teste de banco de dados
@@ -70,6 +71,26 @@ describe('Suíte de testes (DB + HTTP)', () => {
       );
       expect(res.body.user._id).toHaveLength(24); // por ser um ObjectId do Mongo DB
       expect(res.body.user.password).toBeUndefined(); // senha não é retornada, msm em hash
+    });
+
+    test('tenta criar usuário, mas retorna 409 - Conflict', async () => {
+      // Primeiro cria um novo usuário no banco de testes (201)
+      await request
+        .post('/signup')
+        .send(userPayload)
+        .set('Accept', 'application/json');
+
+      // Depois, tenta criar o mesmo usuário (409)
+      const res = await request
+        .post('/signup')
+        .send(userPayload)
+        .set('Accept', 'application/json');
+
+      expect(res.headers['content-type']).toMatch(/json/);
+      expect(res.statusCode).toBe(409);
+
+      expect(res.body).toHaveProperty('message');
+      expect(res.body.message).toBe(errorMsg.msgOfErrorConflict);
     });
   });
 
