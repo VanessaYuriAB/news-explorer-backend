@@ -118,6 +118,35 @@ describe('Suíte de testes (DB + HTTP)', () => {
         expect.stringMatching(/^[\w-]+\.[\w-]+\.[\w-]+$/),
       );
     });
+
+    // Para testas dois cenários diferentes no msm teste, com mesmo retorno
+    test.each([
+      {
+        name: 'senha errada',
+        payload: { email: userPayload.email, password: 'senhaerrada123' },
+      },
+      {
+        name: 'email inexistente',
+        payload: {
+          email: 'email@inexistente.com',
+          password: userPayload.password,
+        },
+      },
+    ])(
+      'tenta logar, mas retorna 401 - Unauthorized: ($name)',
+      async ({ payload }) => {
+        const res = await request
+          .post('/signin')
+          .send(payload)
+          .set('Accept', 'application/json');
+
+        expect(res.headers['content-type']).toMatch(/json/);
+        expect(res.statusCode).toBe(401);
+
+        expect(res.body).toHaveProperty('message');
+        expect(res.body.message).toBe(errorMsg.msgOfErrorUnauthorizedLogin);
+      },
+    );
   });
 
   // Endpoint de busca de usuário → usuário + token
