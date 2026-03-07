@@ -10,7 +10,7 @@ const request = supertest(app);
 const User = require('../models/user');
 const errorMsg = require('../utils/errorsMsgs');
 
-describe('Suíte de testes (DB + HTTP)', () => {
+describe('Suíte de testes de integração (DB + HTTP)', () => {
   // Teste de banco de dados
   // Adiciona dados de teste ao banco de dados -> testa -> exclui os dados de teste
 
