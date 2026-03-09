@@ -6,6 +6,7 @@ const app = require('../server');
 const request = supertest(app);
 
 const User = require('../models/user');
+const userPayload = require('./fixtures/userPayload');
 const errorMsg = require('../utils/errorsMsgs');
 
 describe('Suíte de testes de integração (DB + HTTP): user', () => {
@@ -18,13 +19,6 @@ describe('Suíte de testes de integração (DB + HTTP): user', () => {
     // Cleanup: limpa a coleção de teste de usuário
     await User.deleteMany({});
   });
-
-  // Obj de configuração para dados de usuário teste
-  const userPayload = {
-    email: 'usuario@teste.com',
-    password: 'usuarioteste123',
-    name: 'Usuário Teste',
-  };
 
   // Testes de solicitações HTTP (endpoints)
   // Inicia o teste -> conecta ao servidor -> executa os testes -> desconecta do servidor
