@@ -7,7 +7,9 @@ const request = supertest(app);
 
 const User = require('../models/user');
 const Article = require('../models/article');
-const userPayload = require('./fixtures/userPayload');
+const {
+  userPayload /* , anotherUserPayload */,
+} = require('./fixtures/usersPayloads');
 
 describe('Suíte de testes de integração (DB + HTTP): article', () => {
   // Banco de dados: conexão (setup) e desconexão (teardown) globais, em jest.setup.js +
@@ -177,6 +179,32 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
         expect(new Date(res.body.date).toISOString()).toBe(
           new Date(toSavePayload.publishedAt).toISOString(),
         );
+      });
+    });
+
+    // Seed de artigo: para testes que exigem usuário cadastrado, logado e artigo
+    // previamente criado > envolvendo busca e delete de artigos do usuário
+    describe('Com artigo cadastrado (seed article)', () => {
+      // Seed de artigo: cria artigo com POST usando token
+      let article;
+
+      // Verificações do seed extraídas para função, devido erro acusado pelo ESLint:
+      // jest/no-standalone-expect (falso positivo em hooks)
+      function assertValidArticleResponse(seedArticle) {
+        expect(seedArticle.headers['content-type']).toMatch(/json/);
+        expect(seedArticle.statusCode).toBe(201);
+        expect(seedArticle.body._id).toMatch(/^[a-f\d]{24}$/i);
+      }
+
+      beforeEach(async () => {
+        article = await request
+          .post('/articles')
+          .send(toSavePayload)
+          .set('Accept', 'application/json')
+          .set('authorization', `Bearer ${token}`);
+
+        // Garante seed article confiável (não mascara erro)
+        assertValidArticleResponse(article);
       });
     });
   });
