@@ -176,6 +176,25 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
       });
     });
 
+    // Endpoint de busca de artigos → com seeds de auth e sem artigo
+    describe('GET: /articles (sem artigos)', () => {
+      test('lista de artigos do usuário vazia', async () => {
+        // GET /articles com authorization
+        const articles = await request
+          .get('/articles')
+          .set('authorization', `Bearer ${token}`);
+
+        expect(articles.headers['content-type']).toMatch(/json/);
+        expect(articles.statusCode).toBe(200);
+
+        // Resposta, body, deve conter a propriedade especificada
+        expect(articles.body).toHaveProperty('userArticles');
+
+        // A propriedade do objeto de resposta deve ser um array vazio
+        expect(articles.body.userArticles).toStrictEqual([]);
+      });
+    });
+
     // Seed de artigo: para testes que exigem usuário cadastrado, logado e artigo
     // previamente criado > envolvendo busca e delete de artigos do usuário
     describe('Com artigo cadastrado (seed article)', () => {
