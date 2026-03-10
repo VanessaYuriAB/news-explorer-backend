@@ -246,6 +246,10 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
           expect(deleted.body).toHaveProperty('deletedArticle');
           expect(deleted.body.deletedArticle).toMatchObject(expect.any(Object));
           expect(deleted.body.deletedArticle._id).toEqual(article.body._id);
+
+          // Valida e garante que o banco ficou no estado esperado, sem o cadastro do artigo
+          const found = await Article.findById(article.body._id);
+          expect(found).toBeNull();
         });
 
         // Se o artigo estiver salvo por mais de um usuário > apenas atualiza o campo owner
@@ -255,10 +259,12 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
           // Seeds necessários: segundo usuário criado e logado + msm artigo salvo
 
           // Seed signup B
-          await request
+          const registrationB = await request
             .post('/signup')
             .send(anotherUserPayload)
             .set('Accept', 'application/json');
+
+          const userIdB = registrationB.body.user._id;
 
           // Seed signin B
           const loginB = await request
@@ -308,6 +314,19 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
           expect(unsaved.body).toHaveProperty('unsavedArticle');
           expect(unsaved.body.unsavedArticle).toMatchObject(expect.any(Object));
           expect(unsaved.body.unsavedArticle._id).toEqual(article.body._id);
+
+          // Valida e garante que o banco ficou no estado esperado, com o cadastro do artigo,
+          // mas sem o id do usuário em owner
+          const found = await Article.findById(article.body._id).select(
+            '+owner',
+          );
+          expect(found).not.toBeNull();
+
+          // Aplica .map(String) em owner para converter ObjectId do mongoose em string
+          // found.owner.map(id => id.toString());
+          const owners = found.owner.map(String);
+          expect(owners).toContain(userIdB); // id do usuário B
+          expect(owners).not.toContain(userId); // removido usuário padrão
         });
       });
     });
