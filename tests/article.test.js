@@ -114,10 +114,12 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
         // logado, apenas com tokenB
 
         // Seed signup B
-        await request
+        const registrationB = await request
           .post('/signup')
           .send(anotherUserPayload)
           .set('Accept', 'application/json');
+
+        const userIdB = registrationB.body.user._id;
 
         // Seed signin B
         const loginB = await request
@@ -173,6 +175,13 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
         expect(new Date(res.body.date).toISOString()).toBe(
           new Date(toSavePayload.publishedAt).toISOString(),
         );
+
+        // Valida owner, testanto banco de dados
+        const found = await Article.findById(articleIdA).select('+owner');
+        expect(found.owner.length).toBe(2);
+
+        const owners = found.owner.map(String);
+        expect(owners).toEqual(expect.arrayContaining([userId, userIdB]));
       });
     });
 
