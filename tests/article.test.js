@@ -114,6 +114,14 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
       });
 
       // DELETE
+      test('DELETE /articles/:articleId', async () => {
+        expect.assertions(12);
+
+        // Seed de artigo
+        const { article } = await createSeedOfArticle();
+
+        await returnBadRequest(request.delete(`/articles/${article.body._id}`));
+      });
     });
 
     // Formato inválido, Authorization não bate regex
@@ -141,6 +149,18 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
       });
 
       // DELETE
+      test('DELETE /articles/:articleId', async () => {
+        expect.assertions(12);
+
+        // Seed de artigo
+        const { article } = await createSeedOfArticle();
+
+        await returnBadRequest(
+          request
+            .delete(`/articles/${article.body._id}`)
+            .set('authorization', `Bearer`),
+        );
+      });
     });
 
     // Sem dados do body
