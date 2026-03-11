@@ -8,6 +8,7 @@ const request = supertest(app);
 const User = require('../models/user');
 const Article = require('../models/article');
 const { userPayload, anotherUserPayload } = require('./fixtures/usersPayloads');
+const errorsMsgs = require('../utils/errorsMsgs');
 
 describe('Suíte de testes de integração (DB + HTTP): article', () => {
   // Banco de dados: conexão (setup) e desconexão (teardown) globais, em jest.setup.js +
@@ -38,6 +39,43 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
   // Inicia o teste -> conecta ao servidor -> executa os testes -> desconecta do servidor
   // -> conclui os testes
   // SuperTest se encarrega de conectar-se ao servidor e a partir dele
+
+  // Com erros de autenticação (401)
+  describe('Retornam erros de autenticação, 401 - Unauthorized', () => {
+    const invalidToken = `Bearer a.b.c`;
+
+    // Função genérica para todos endpoints
+    async function returnUnauthorized(testRequest) {
+      const error = await testRequest;
+
+      expect(error.headers['content-type']).toMatch(/json/);
+      expect(error.statusCode).toBe(401);
+
+      expect(error.body).toMatchObject({
+        message: expect.stringMatching(errorsMsgs.msgOfErrorUnauthorizedToken),
+      });
+    }
+
+    // no POST
+    test('POST /articles retorna 401 com token inválido', async () => {
+      expect.assertions(3);
+
+      await returnUnauthorized(
+        request.post('/articles').set('authorization', invalidToken),
+      );
+    });
+
+    // no GET
+    test('GET /articles retorna 401 com token inválido', async () => {
+      expect.assertions(3);
+
+      await returnUnauthorized(
+        request.get('/articles').set('authorization', invalidToken),
+      );
+    });
+
+    // no DELETE
+  });
 
   // Seeds de auth: usuário cadastrado e logado > envolvendo todos os conjuntos de testes
   describe('Rotas protegidas (precisa estar logado)', () => {
@@ -254,6 +292,10 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
 
           // Deve conter o artigo seedado
           expect(articles.body.userArticles[0]._id).toEqual(article.body._id);
+
+          // O filtro por `owner`, no controlador, já garante que apenas artigos do
+          // usuário autenticado sejam retornados, não sendo necessário validar o
+          // campo `owner` diretamente no teste
         });
       });
 

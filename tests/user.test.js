@@ -7,7 +7,7 @@ const request = supertest(app);
 
 const User = require('../models/user');
 const { userPayload } = require('./fixtures/usersPayloads');
-const errorMsg = require('../utils/errorsMsgs');
+const errorsMsgs = require('../utils/errorsMsgs');
 
 describe('Suíte de testes de integração (DB + HTTP): user', () => {
   // Banco de dados: conexão (setup) e desconexão (teardown) globais, em jest.setup.js +
@@ -65,7 +65,7 @@ describe('Suíte de testes de integração (DB + HTTP): user', () => {
       expect(error.statusCode).toBe(409);
 
       expect(error.body).toHaveProperty('message');
-      expect(error.body.message).toEqual(errorMsg.msgOfErrorConflict);
+      expect(error.body.message).toEqual(errorsMsgs.msgOfErrorConflict);
     });
   });
 
@@ -122,7 +122,7 @@ describe('Suíte de testes de integração (DB + HTTP): user', () => {
 
         expect(error.body).toHaveProperty('message');
         expect(error.body.message).toEqual(
-          errorMsg.msgOfErrorUnauthorizedLogin,
+          errorsMsgs.msgOfErrorUnauthorizedLogin,
         );
       },
     );
@@ -212,7 +212,7 @@ describe('Suíte de testes de integração (DB + HTTP): user', () => {
       expect(error.statusCode).toBe(401);
 
       expect(error.body).toMatchObject({
-        message: expect.stringMatching(errorMsg.msgOfErrorUnauthorizedToken),
+        message: expect.stringMatching(errorsMsgs.msgOfErrorUnauthorizedToken),
       });
     });
 
@@ -229,7 +229,7 @@ describe('Suíte de testes de integração (DB + HTTP): user', () => {
       expect(error.statusCode).toBe(404);
 
       expect(error.body).toMatchObject({
-        message: expect.stringMatching(errorMsg.msgOfErrorNotFoundUser),
+        message: expect.stringMatching(errorsMsgs.msgOfErrorNotFoundUser),
       });
     });
   });
