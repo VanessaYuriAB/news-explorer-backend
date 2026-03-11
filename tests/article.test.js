@@ -69,6 +69,11 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
       });
 
       // GET
+      test('GET /articles', async () => {
+        expect.assertions(3);
+
+        await returnBadRequest(request.get('/articles'));
+      });
 
       // DELETE
     });
@@ -89,6 +94,13 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
       });
 
       // GET
+      test('GET /articles', async () => {
+        expect.assertions(3);
+
+        await returnBadRequest(
+          request.get('/articles').set('authorization', `Bearer`),
+        );
+      });
 
       // DELETE
     });
