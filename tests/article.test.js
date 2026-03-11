@@ -75,6 +75,48 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
     });
 
     // no DELETE
+    test('DELETE /articles/:articleId retorna 401 com token inválido', async () => {
+      expect.assertions(12);
+
+      // Seeds de autenticação
+      const registration = await request
+        .post('/signup')
+        .send(userPayload)
+        .set('Accept', 'application/json');
+
+      expect(registration.headers['content-type']).toMatch(/json/);
+      expect(registration.statusCode).toBe(201);
+      expect(registration.body).toHaveProperty('user');
+
+      const login = await request
+        .post('/signin')
+        .send({
+          email: userPayload.email,
+          password: userPayload.password,
+        })
+        .set('Accept', 'application/json');
+
+      expect(login.headers['content-type']).toMatch(/json/);
+      expect(login.statusCode).toBe(200);
+      expect(login.body).toHaveProperty('token');
+
+      // Seed de artigo
+      const article = await request
+        .post('/articles')
+        .send(toSavePayload)
+        .set('Accept', 'application/json')
+        .set('authorization', `Bearer ${login.body.token}`);
+
+      expect(article.headers['content-type']).toMatch(/json/);
+      expect(article.statusCode).toBe(201);
+      expect(article.body._id).toMatch(/^[a-f\d]{24}$/i);
+
+      await returnUnauthorized(
+        request
+          .delete(`/articles/${article.body._id}`)
+          .set('authorization', invalidToken),
+      );
+    });
   });
 
   // Seeds de auth: usuário cadastrado e logado > envolvendo todos os conjuntos de testes
