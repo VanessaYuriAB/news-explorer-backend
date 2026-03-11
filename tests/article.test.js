@@ -163,8 +163,21 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
       });
     });
 
-    // Sem dados do body
-    // Ex: com token, mas tag com string vazia no post
+    // Body inválido, no POST
+    // Ex: com token, mas tag com string vazia no body
+    test('POST /articles com body inválido', async () => {
+      expect.assertions(12);
+
+      // Seed
+      const { login } = await createSeeds();
+
+      await returnBadRequest(
+        request
+          .post('/articles')
+          .send({ ...toSavePayload, tag: '' }) // inválido
+          .set('authorization', `Bearer ${login.body.token}`),
+      );
+    });
 
     // Params inválido, no DELETE
     test('DELETE /articles/:articleId com params inválido', async () => {
