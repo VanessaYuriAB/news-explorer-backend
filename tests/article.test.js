@@ -36,7 +36,7 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
   };
 
   // Geração de seed de artigo para describes de erros
-  const createSeedOfArticle = async () => {
+  const createSeeds = async () => {
     // Seeds de autenticação
     const registration = await request
       .post('/signup')
@@ -70,7 +70,7 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
     expect(article.statusCode).toBe(201);
     expect(article.body._id).toMatch(/^[a-f\d]{24}$/i);
 
-    return { article };
+    return { article, login };
   };
 
   // Testes de solicitações HTTP (endpoints)
@@ -118,7 +118,7 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
         expect.assertions(12);
 
         // Seed de artigo
-        const { article } = await createSeedOfArticle();
+        const { article } = await createSeeds();
 
         await returnBadRequest(request.delete(`/articles/${article.body._id}`));
       });
@@ -153,7 +153,7 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
         expect.assertions(12);
 
         // Seed de artigo
-        const { article } = await createSeedOfArticle();
+        const { article } = await createSeeds();
 
         await returnBadRequest(
           request
@@ -165,6 +165,22 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
 
     // Sem dados do body
     // Ex: com token, mas tag com string vazia no post
+
+    // Params inválido, no DELETE
+    test('DELETE /articles/:articleId com params inválido', async () => {
+      expect.assertions(12);
+
+      // Seed
+      const { login } = await createSeeds();
+
+      const badArticleId = '123';
+
+      await returnBadRequest(
+        request
+          .delete(`/articles/${badArticleId}`)
+          .set('authorization', `Bearer ${login.body.token}`),
+      );
+    });
   });
 
   // Com erros de autenticação (401)
@@ -210,7 +226,7 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
       expect.assertions(12);
 
       // Seed de artigo
-      const { article } = await createSeedOfArticle();
+      const { article } = await createSeeds();
 
       await returnUnauthorized(
         request
