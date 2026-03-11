@@ -61,7 +61,11 @@ describe('Suíte de testes de integração (DB + HTTP): article', () => {
       expect.assertions(3);
 
       await returnUnauthorized(
-        request.post('/articles').set('authorization', invalidToken),
+        request
+          .post('/articles')
+          .send(toSavePayload)
+          .set('Accept', 'application/json')
+          .set('authorization', invalidToken),
       );
     });
 
