@@ -1,14 +1,17 @@
 // Setup super-test
 const supertest = require('supertest');
 // Setup express test service
-const app = require('../server');
+const app = require('../../server');
 // Setup request to test
 const request = supertest(app);
 
-const User = require('../models/user');
-const Article = require('../models/article');
-const { userPayload, anotherUserPayload } = require('./fixtures/usersPayloads');
-const errorsMsgs = require('../utils/errorsMsgs');
+const User = require('../../models/user');
+const Article = require('../../models/article');
+const {
+  userPayload,
+  anotherUserPayload,
+} = require('../fixtures/usersPayloads');
+const errorsMsgs = require('../../utils/errorsMsgs');
 
 describe('Suíte de testes de integração (DB + HTTP): article', () => {
   // Banco de dados: conexão (setup) e desconexão (teardown) globais, em jest.setup.js +
