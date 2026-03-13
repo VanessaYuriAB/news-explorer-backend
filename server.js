@@ -63,7 +63,7 @@ const app = express();
 // CORS
 // ------
 
-// fallback seguro, impede crashes se a env estiver faltando
+// Fallback seguro, impede crashes se a env estiver faltando
 // '.split(',')' para transformar a string em array
 // '.map()' com 'trim()' para remover qlqr espaço em branco que possa ter
 // '.filter(Boolean)' remove entradas vazias automaticamente, tudo que é “falsey”
@@ -123,11 +123,16 @@ app.options(/.*/, cors(corsOptions));
 // Configuração com opções específicas
 
 // 'contentSecurityPolicy' espera um array de strings para cada diretiva (como connectSrc)
+
+// Fallback seguro, impede crashes se a env estiver faltando
+// '.split(',')' para transformar a string em array
 // '.map()' com 'trim()' para ajuste de formatação pq no .env é armazenado como única
 // string, para converter em array
-const connectSrcUrls = process.env.CSP_CONNECT_SRC.split(',').map((url) =>
-  url.trim(),
-);
+// '.filter(Boolean)' remove entradas vazias automaticamente, tudo que é “falsey”
+const connectSrcUrls = (process.env.CSP_CONNECT_SRC || '')
+  .split(',')
+  .map((url) => url.trim())
+  .filter(Boolean);
 
 // Baseado em diretivas definidas no frontend para CSP
 app.use(
