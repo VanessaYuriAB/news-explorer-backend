@@ -6,7 +6,7 @@ const celebrateForSignin = celebrate({
     password: Joi.string()
       .required()
       .min(8)
-      .pattern(/^[^<>]+$/), // regex para segurança básica, '<' e '>' não são permitidos
+      .pattern(/^[^<>]+$/), // bloqueia caracteres básicos de HTML ('<' e '>') por segurança
   }),
 });
 

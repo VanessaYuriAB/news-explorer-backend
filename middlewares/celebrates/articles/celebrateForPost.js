@@ -2,11 +2,10 @@ const { celebrate, Joi } = require('celebrate');
 
 const celebrateForPost = celebrate({
   body: Joi.object().keys({
-    // Celebrate é configurado de acordo com as propriedades do obj que são definidas no
-    // front-end e não no schema do backend
+    // Validação baseada no payload enviado pelo front-end
     tag: Joi.string()
       .required()
-      .pattern(/^[^<>]+$/), // regex para segurança básica, '<' e '>' não são permitidos
+      .pattern(/^[^<>]+$/), // bloqueia caracteres básicos de HTML ('<' e '>') por segurança
     title: Joi.string().allow(null).optional(),
     description: Joi.string().allow(null).optional(),
     publishedAt: Joi.date().allow(null).optional(),

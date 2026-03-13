@@ -2,18 +2,15 @@
 // Dotenv
 // --------
 
-// 1) Carrega dotenv primeiro de tudo — absolutamente no topo
+// Carrega dotenv antes de qualquer uso de process.env
 const dotenv = require('dotenv');
 
-// Carrega dotenv dinamicamente
-// Pacote dotenv só lê .env., mas é possível especificar qual arquivo carregar
-// Ao rodar scripts (ou comandos), o Express pega variáveis do NODE_ENV definido
-// Ex: npm run dev pega variáveis do .env.development
+// Configura leitura do arquivo dinamicamente, de acordo com o ambiente
 const resultEnv = dotenv.config({
   path: `.env.${process.env.NODE_ENV}`,
 });
 
-// Loga retorno sobre .env, se estiver em ambiente de desenvolvimento
+// Log sobre .env, apenas em desenvolvimento
 if (process.env.NODE_ENV === 'development') {
   if (resultEnv.error) {
     console.warn(
@@ -24,81 +21,58 @@ if (process.env.NODE_ENV === 'development') {
   }
 }
 
-// Executa função de configuração env: fallback para desenvolvimento e verificação
-// para produção
+// Aplica fallbacks (dev/test) e valida envs obrigatórias (produção)
 require('./utils/configEnv')();
 
-// 2) Agora sim, importa módulos que podem usar process.env
+// --------------------
+// Importações do app
+// --------------------
 
 const express = require('express');
-
 const cors = require('cors');
-
 const helmet = require('helmet');
-
 const mongoose = require('mongoose');
-
 const { errors } = require('celebrate');
 
 const routes = require('./routes/index');
-
 const limiter = require('./middlewares/limiter');
-
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-
 const notFoundPage = require('./middlewares/notFoundPage');
-
 const handleError = require('./middlewares/errorHandler');
-
 const ForbiddenError = require('./errors/ForbiddenError');
 
 // --------
 // Express
 // --------
 
-// Cria um aplicativo Express
 const app = express();
 
 // ------
 // CORS
 // ------
 
-// Fallback seguro, impede crashes se a env estiver faltando
-// '.split(',')' para transformar a string em array
-// '.map()' com 'trim()' para remover qlqr espaço em branco que possa ter
-// '.filter(Boolean)' remove entradas vazias automaticamente, tudo que é “falsey”
+// Fallback seguro caso a env não exista
 const allowedCors = (process.env.CORS_ORIGIN || '')
   .split(',')
   .map((url) => url.trim())
   .filter(Boolean);
 
-// Configuração com opções específicas
 const corsOptions = {
-  // O callback é uma função fornecida pelo middleware cors para indicar se a origem
-  // é permitida
-  // Espera dois parâmetros: callback(error, allow)
-  // error: null se não houve erro ou um objeto Error para bloquear
-  // allow: true se a origem é permitida ou false se não
-
   origin: (origin, callback) => {
-    // Se não houver origin (Postman, curl, apps mobile), permite
+    // Permite requisições sem origin (Postman, mobile, etc.)
     if (!origin) {
       return callback(null, true);
     }
 
-    // Se houver origin e estiver na lista, permite
     if (allowedCors.includes(origin)) {
       return callback(null, true);
     }
 
-    // Caso contrário, bloqueia
-
-    // Cria um erro customizado com name
     const corsError = new ForbiddenError(
       `Origem não permitida pelo CORS, ${origin}`,
     );
     return callback(corsError);
-  }, // origens permitidas e tratamento com msg de erro, caso não
+  },
 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -120,15 +94,7 @@ app.options(/.*/, cors(corsOptions));
 
 // Depois do CORS, para não sobrescrever cabeçalhos
 
-// Configuração com opções específicas
-
-// 'contentSecurityPolicy' espera um array de strings para cada diretiva (como connectSrc)
-
-// Fallback seguro, impede crashes se a env estiver faltando
-// '.split(',')' para transformar a string em array
-// '.map()' com 'trim()' para ajuste de formatação pq no .env é armazenado como única
-// string, para converter em array
-// '.filter(Boolean)' remove entradas vazias automaticamente, tudo que é “falsey”
+// Fallback seguro para CSP
 const connectSrcUrls = (process.env.CSP_CONNECT_SRC || '')
   .split(',')
   .map((url) => url.trim())
@@ -149,7 +115,7 @@ app.use(
   }),
 );
 
-// Para 'Referrer Policy': o cabeçalho 'Referer' normalmente informa a URL da página
+// 'Referrer Policy': o cabeçalho 'Referer' normalmente informa a URL da página
 // anterior quando vc navega para outra, 'same-origin' envia o referer apenas para o
 // mesmo domínio
 app.use(helmet.referrerPolicy({ policy: 'same-origin' }));
@@ -160,21 +126,18 @@ app.use(helmet.referrerPolicy({ policy: 'same-origin' }));
 
 // Depois do CORS, para não bloquear preflight
 
-// Aplica o limitador de taxa
 app.use(limiter);
 
 // ------------
 // Body-parser
 // ------------
 
-// Para analisar application/json
 app.use(express.json());
 
 // --------------------
-// Logs (solicitações)
-// --------------------
+// Logs (requests)
+// -------------------
 
-// Habilita o registrador de solicitações
 app.use(requestLogger);
 
 // --------
@@ -212,32 +175,26 @@ if (process.env.NODE_ENV === 'development') {
 // Rota principal
 app.use('/', routes);
 
-// -------------
-// Logs (erros)
-// -------------
+// --------------
+// Logs (errors)
+// --------------
 
-// Habilita o registrador de erros
 app.use(errorLogger);
 
 // ----------------------
 // Tratamento de erros
 // ----------------------
 
-// Tratamento centralizado de erros do Celebrate
 app.use(errors());
-
-// Tratamento para rotas não encontradas
 app.use(notFoundPage);
-
-// Tratamento centralizado de erros
 app.use(handleError);
 
-// ---------------------------
-// Conexão com banco de dados
-// ---------------------------
+// -----------------
+// Banco de dados
+// -----------------
 
-// Conecta ao servidor Mongo DB
 mongoose
+
   .connect(`${process.env.MONGODB_URI}/${process.env.DB_NAME}`)
   .then(() => {
     console.log(
@@ -248,8 +205,8 @@ mongoose
     console.log(`Erro ao conectar com Mongo DB: ${err}`);
 
     // Em teste, erros devem falhar testes, não matar processos
-    // Jest captura o erro, o teste falha corretamente e o stacktrace permanece completo pq o
-    // erro é lançado antes do '.exit'
+    // Jest captura o erro, o teste falha corretamente e o stacktrace
+    // permanece completo pq o erro é lançado antes do '.exit'
     if (process.env.NODE_ENV === 'test') {
       throw err;
     }
@@ -258,13 +215,12 @@ mongoose
     process.exit(1);
   });
 
-// ----------------------
-// Conexão com servidor
-// ----------------------
+// -----------
+// Servidor
+// -----------
 
 // Sobe o servidor da aplicação
 // Configura porta a ser ouvida, apenas se não estiver executando no modo de teste
-// Para Supertest
 if (process.env.NODE_ENV !== 'test') {
   app.listen(process.env.PORT, () => {
     console.log(`Aplicativo escutando na porta: ${process.env.PORT}`);

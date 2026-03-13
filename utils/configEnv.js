@@ -3,9 +3,7 @@ const ConfigError = require('../errors/ConfigError');
 const { msgOfErrorConfig } = require('./errorsMsgs');
 
 const configEnv = () => {
-  // Define fallbacks para variáveis em ambientes diferentes de produção (ex:
-  // desenvolvimento e teste)
-  // Para app rodar mesmo sem arquivo .env
+  // Fallbacks para ambientes não produtivos (dev/test)
   if (process.env.NODE_ENV !== 'production') {
     process.env.PORT = process.env.PORT || 3001;
     process.env.MONGODB_URI =
@@ -21,7 +19,7 @@ const configEnv = () => {
     process.env.RATE_LIMIT_MAX = process.env.RATE_LIMIT_MAX || 1000;
   }
 
-  // Verifica variáveis em ambiente de produção
+  // Em produção, todas as variáveis obrigatórias devem estar definidas
   if (process.env.NODE_ENV === 'production') {
     const requiredEnvVars = [
       'CORS_ORIGIN',

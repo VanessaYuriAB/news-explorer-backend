@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 
-// Cria o esquema para artigos (cards)
+// Schema de artigos
 const articleSchema = new mongoose.Schema({
   keyword: {
     type: String,
     required: true,
-    match: /^[^<>]+$/, // regex para segurança básica, '<' e '>' não são permitidos
+    match: /^[^<>]+$/, // bloqueia HTML básico por segurança ('<' e '>')
   },
   title: {
     type: String,
@@ -53,13 +53,14 @@ const articleSchema = new mongoose.Schema({
     },
   },
   owner: {
-    type: [mongoose.Schema.Types.ObjectId], // _id é gerado pelo próprio Mongo DB, ao
-    // salvar um usuário - [] pq pode ser mais de um
+    type: [mongoose.Schema.Types.ObjectId], // permite múltiplos usuários por artigo
     ref: 'user',
     default: [],
-    select: false, // o banco de dados não devolve esse campo por padrão > apenas em queries, qdo feito find, findOne, findById, não inclui o campo por padrão > create, save, new Model() não passam por projeção e, após o método, o campo é retornado na requisição feita
+    select: false, // em queries (find, findOne, findById), o campo é retornado apenas
+    // quando explicitamente selecionado - create, save, new Model() não passam por
+    // projeção e, após o método, o campo é retornado na requisição feita
   },
 });
 
-// Cria o modelo a partir do esquema e exporta-o
+// Exporta o modelo, criado a partir do esquema
 module.exports = mongoose.model('article', articleSchema);

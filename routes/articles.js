@@ -1,7 +1,4 @@
-// Esse é o arquivo de rotas para artigos
-
-// Cria um roteador ('/articles')
-const articlesRouter = require('express').Router();
+const articlesRouter = require('express').Router(); // cria um roteador ('/articles')
 
 const {
   getUserArticles,
@@ -12,19 +9,13 @@ const {
 const celebrateForPost = require('../middlewares/celebrates/articles/celebrateForPost');
 const celebrateForDelete = require('../middlewares/celebrates/articles/celebrateForDelete');
 
-// GET - '/articles'
-// Retorna todos os artigos salvos pelo usuário
-// Rota não usa Celebrate/Joi porque não recebe dados do cliente; utiliza apenas req.user,
-// preenchido pelo middleware de autenticação
+// Lista todos os artigos salvos pelo usuário autenticado
 articlesRouter.get('/', getUserArticles);
 
-// POST - '/articles'
-// Cria um artigo com a palavra-chave, título, texto, data, fonte, link, e imagem
-// passados no corpo
+// Cria (ou associa) um artigo ao usuário
 articlesRouter.post('/', celebrateForPost, postUserArticles);
 
-// DELETE - '/articles/articleId'
-// Exclui o artigo armazenado pelo _id
+// Remove o artigo salvo pelo usuário
 articlesRouter.delete('/:articleId', celebrateForDelete, deleteUserArticles);
 
 module.exports = articlesRouter;

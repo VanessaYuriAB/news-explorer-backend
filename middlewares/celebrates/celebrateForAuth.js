@@ -5,11 +5,10 @@ const celebrateForAuth = celebrate({
     .keys({
       authorization: Joi.string()
         .required()
-        .pattern(/^Bearer\s[\w-]+\.[\w-]+\.[\w-]+$/), // regex para formato JWT
+        .pattern(/^Bearer\s[\w-]+\.[\w-]+\.[\w-]+$/), // valida formato padrão do JWT
     })
-    // Permite campos que não estão listados no objeto de validação (outros headers não
-    // presentes aqui)
-    .unknown(true),
+    .unknown(true), // permite outros headers além do authorization, campos que não estão
+  // listados no objeto de validação
 });
 
 module.exports = celebrateForAuth;

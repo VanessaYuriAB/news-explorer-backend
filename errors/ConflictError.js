@@ -1,5 +1,3 @@
-// Construtor de erro personalizado > Conflict (409)
-
 // Conflito de índice único (e-mail duplicado), o MongoDB lança erro com code: 11000 → 409
 
 class ConflictError extends Error {

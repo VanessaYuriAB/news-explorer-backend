@@ -1,5 +1,3 @@
-// Construtor de erro personalizado > Rate Limit (429)
-
 class RateLimitError extends Error {
   constructor(message) {
     super(message);
