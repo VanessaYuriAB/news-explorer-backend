@@ -568,10 +568,14 @@ Concluído: aplicação full‑stack online 🎉
 
 ## 📈 12. Melhorias
 
-- Integração dos testes ao CI/CD (GitHub Actions)
-- Aumento da cobertura de testes
-- Testes de carga (rate limit)
-- Documentação da API com Swagger / Open
+- Remoção da função utilitária `handleAsync`: como o projeto já utiliza _Express 5.2.1_, exceções lançadas (`throw`) em controllers assíncronos são automaticamente encaminhadas para o middleware central de erros via `next()`. Desta forma, removendo o wrapper e aproveitando o suporte nativo do framework, é possível simplificar o fluxo de tratamento de erros nos controllers e reduzir boilerplate.
+
+- Atualização dos _screenshots do README_: para demonstrar requisições do Postman com o link do _subdomínio da API_, refletindo o ambiente de produção do back‑end.
+
+- Integração dos testes ao CI/CD (_GitHub Actions_).
+- Aumento da cobertura de testes.
+- Testes de carga (_rate limit_).
+- Documentação da API com _Swagger / OpenAPI_.
 
 [Voltar ao topo 🔝](#top)
 
